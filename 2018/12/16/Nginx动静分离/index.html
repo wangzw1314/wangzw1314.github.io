@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.next_gaitubao_com_.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.next_gaitubao_com_.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一.动静分离通过中间件将动态请求和静态请求分离&amp;gt;&amp;gt;减少不必要的请求消耗，减少请求延时。  ‘    二.配置动静分离2.1nginx服务器 redhat7 Nginx 10.10.11.221   tomcat服务器 redhat7 tomcat+jdk 10.10.11.19    2.2 准备测试文件A：[root@liujie code]# vim /opt/app/code/t">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx动静分离">
+<meta property="og:url" content="http://yoursite.com/2018/12/16/Nginx动静分离/index.html">
+<meta property="og:site_name" content="Wang zewei">
+<meta property="og:description" content="一.动静分离通过中间件将动态请求和静态请求分离&amp;gt;&amp;gt;减少不必要的请求消耗，减少请求延时。  ‘    二.配置动静分离2.1nginx服务器 redhat7 Nginx 10.10.11.221   tomcat服务器 redhat7 tomcat+jdk 10.10.11.19    2.2 准备测试文件A：[root@liujie code]# vim /opt/app/code/t">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://i.imgur.com/01SKLn0.png">
+<meta property="og:image" content="https://i.imgur.com/hh6Ka6h.png">
+<meta property="og:image" content="https://i.imgur.com/g1HX1ae.png">
+<meta property="og:image" content="https://i.imgur.com/ZvyD97G.png">
+<meta property="og:image" content="https://i.imgur.com/m0Uj47s.png">
+<meta property="og:updated_time" content="2019-03-11T02:55:13.917Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Nginx动静分离">
+<meta name="twitter:description" content="一.动静分离通过中间件将动态请求和静态请求分离&amp;gt;&amp;gt;减少不必要的请求消耗，减少请求延时。  ‘    二.配置动静分离2.1nginx服务器 redhat7 Nginx 10.10.11.221   tomcat服务器 redhat7 tomcat+jdk 10.10.11.19    2.2 准备测试文件A：[root@liujie code]# vim /opt/app/code/t">
+<meta name="twitter:image" content="https://i.imgur.com/01SKLn0.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/12/16/Nginx动静分离/">
+
+
+
+
+<script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+<link href="//cdn.bootcss.com/pace/1.0.2/themes/pink/pace-theme-flash.css" rel="stylesheet">
+
+  <title>Nginx动静分离 | Wang zewei</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Wang zewei</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/16/Nginx动静分离/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wang zewei">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wang zewei">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Nginx动静分离</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-16T13:25:00+08:00">
+                2018-12-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/Nginx/" itemprop="url" rel="index">
+                    <span itemprop="name">Nginx</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="一-动静分离"><a href="#一-动静分离" class="headerlink" title="一.动静分离"></a>一.动静分离</h1><p>通过中间件将动态请求和静态请求分离&gt;&gt;减少不必要的请求消耗，减少请求延时。  ‘<br><img src="https://i.imgur.com/01SKLn0.png" alt="">  </p>
+<hr>
+<h1 id="二-配置动静分离"><a href="#二-配置动静分离" class="headerlink" title="二.配置动静分离"></a>二.配置动静分离</h1><h2 id="2-1"><a href="#2-1" class="headerlink" title="2.1"></a>2.1</h2><p>nginx服务器 redhat7 Nginx 10.10.11.221  </p>
+<p>tomcat服务器 redhat7 tomcat+jdk 10.10.11.19  </p>
+<hr>
+<h2 id="2-2-准备测试文件"><a href="#2-2-准备测试文件" class="headerlink" title="2.2 准备测试文件"></a>2.2 准备测试文件</h2><h3 id="A："><a href="#A：" class="headerlink" title="A："></a>A：</h3><p>[root@liujie code]# vim /opt/app/code/test_mysite.html  </p>
+<pre><code> &lt;html lang=&quot;en&quot;&gt;
+ &lt;head&gt;  
+ &lt;meta charset=&quot;UTF-8&quot; /&gt;  
+ &lt;title&gt;测试ajax和跨域访问&lt;/title&gt;  
+ &lt;script src=&quot;http://libs.baidu.com/jquery/2.1.4/jquery.min.js&quot;&gt;&lt;/script&gt;  
+ &lt;/head&gt;
+ &lt;script type=&quot;text/javascript&quot;&gt;  
+$(document).ready(function(){  
+        $.ajax({      //ajax调用 进行动态请求
+        type: &quot;GET&quot;,  
+        url: &quot;http://liujie.com/java_test.jsp&quot;,
+        success: function(data) {
+               $(&quot;#get_data&quot;).html(data)
+       },
+        error: function() {  
+               alert(&quot;fail!!!,请刷新再试!&quot;);  
+         }  
+      });  
+ });  
+&lt;/script&gt;
+&lt;body&gt;
+     &lt;h1&gt;测试动静分离&lt;/h1&gt;   
+     &lt;img src=&quot;http://liujie.com/img/nginx.png&quot;/&gt;  //请求一张静态图片
+     &lt;div id=&quot;get_data&quot;&gt;&lt;div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre><h3 id="B：为nginx静态请求准备图片"><a href="#B：为nginx静态请求准备图片" class="headerlink" title="B：为nginx静态请求准备图片"></a>B：为nginx静态请求准备图片</h3><pre><code>[root@liujie code]# cd /opt/app/code/img/
+[root@liujie img]# ll
+total 4
+ -rw-r--r-- 1 root root 2103 Aug  8  2017 nginx.png  
+</code></pre><h3 id="C-准备tomcat的动态页面"><a href="#C-准备tomcat的动态页面" class="headerlink" title="C:准备tomcat的动态页面"></a>C:准备tomcat的动态页面</h3><pre><code>[root@tomcat ROOT]# cd /usr/local/tomcat/webapps/ROOT/
+[root@tomcat ROOT]# ll  
+total 192  
+ -rw-r----- 1 root root 27235 Nov  3 13:42 asf-logo-wide.svg  
+ -rw-r----- 1 root root   713 Nov  3 13:39 bg-button.png
+ -rw-r----- 1 root root  1918 Nov  3 13:39 bg-middle.png
+ -rw-r----- 1 root root  1392 Nov  3 13:39 bg-nav-item.png
+ -rw-r----- 1 root root  1401 Nov  3 13:39 bg-nav.png
+ -rw-r----- 1 root root  3103 Nov  3 13:39 bg-upper.png
+ -rw-r----- 1 root root 21630 Nov  3 13:39 favicon.ico
+ -rw-r----- 1 root root 12290 Nov  3 13:42 index.jsp
+ -rw-r--r-- 1 root root   343 Aug  8  2017 java_test.jsp    //动态页面
+ -rw-r----- 1 root root  7142 Nov  3 13:42 RELEASE-NOTES.txt
+ -rw-r----- 1 root root  5581 Nov  3 13:42 tomcat.css
+ -rw-r----- 1 root root  2066 Nov  3 13:39 tomcat.gif  
+</code></pre><p>vim  java_test.jsp   //用于生成动态数字  </p>
+<pre><code>&lt;%@ page language=&quot;java&quot; import=&quot;java.util.*&quot; pageEncoding=&quot;utf-8&quot;%&gt;
+&lt;HTML&gt;
+&lt;HEAD&gt;
+    &lt;TITLE&gt;JSP Test Page&lt;/TITLE&gt;
+&lt;/HEAD&gt;
+&lt;BODY&gt;
+    &lt;%
+        Random rand = new Random();
+        out.println(&quot;&lt;h1&gt;Random number:&lt;/h1&gt;&quot;);
+        out.println(rand.nextInt(99)+100);
+    %&gt;
+&lt;/BODY&gt;
+&lt;/HTML&gt;
+</code></pre><hr>
+<h2 id="2-3-新建nginx下虚拟server"><a href="#2-3-新建nginx下虚拟server" class="headerlink" title="2.3 新建nginx下虚拟server"></a>2.3 新建nginx下虚拟server</h2><p>[root@liujie code]# vim /etc/nginx/conf.d/test_mysite.conf</p>
+<pre><code>upstream java_api{ 
+server 10.10.11.19:8080;  // 转发的服务器，upstream 为负载均衡做准备
+ }
+ server {
+listen       80;
+server_name  liujie.com;
+
+#charset koi8-r;
+access_log  /var/log/nginx/log/host.access.log  main;
+root /opt/app/code;  // 静态资源存放目录
+
+location ~ .*.jsp$ {
+    proxy_pass http://java_api;   // 动态请求的转发
+    proxy_set_header Host $host;
+    #index  index.html index.htm;
+}
+
+
+location ~ \.(jpg|png|gif)$ {   //  静态请求直接读取
+    expires 1h;
+    gzip on;
+}
+
+ location /{
+    index  index.html index.htm;
+
+}
+
+error_page   500 502 503 504 404  /50x.html;
+location = /50x.html {
+    root   /usr/share/nginx/html;
+}  
+
+ }
+</code></pre><hr>
+<h1 id="三-测试页面"><a href="#三-测试页面" class="headerlink" title="三.测试页面"></a>三.测试页面</h1><p>重启nginx tomcat </p>
+<h2 id="3-1-需要配置谷歌浏览器，使浏览器支持跨域"><a href="#3-1-需要配置谷歌浏览器，使浏览器支持跨域" class="headerlink" title="3.1 需要配置谷歌浏览器，使浏览器支持跨域"></a>3.1 需要配置谷歌浏览器，使浏览器支持跨域</h2><p>首先需要关闭谷歌浏览器的所有窗口<br>右击谷歌浏览器图标——&gt;属性。弹出属性对话框。在目标栏最后添加 –args –disable-web-security –user-data-dir 注意空格<br><img src="https://i.imgur.com/hh6Ka6h.png" alt=""></p>
+<p>再次打开谷歌会提示：<br><img src="https://i.imgur.com/g1HX1ae.png" alt="">  </p>
+<hr>
+<h2 id="3-2访问页面："><a href="#3-2访问页面：" class="headerlink" title="3.2访问页面："></a>3.2访问页面：</h2><p>刷新数字会变 则请求到了tomcat<br><img src="https://i.imgur.com/ZvyD97G.png" alt=""><br>停止tomcat：<br>静态页面正常展示<br><img src="https://i.imgur.com/m0Uj47s.png" alt=""></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/16/Nginx作为缓存服务/" rel="next" title="Nginx作为缓存服务">
+                <i class="fa fa-chevron-left"></i> Nginx作为缓存服务
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/16/LVS集群-NAT模式/" rel="prev" title="LVS集群-NAT模式">
+                LVS集群-NAT模式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="Wang zewei">
+            
+              <p class="site-author-name" itemprop="name">Wang zewei</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://vimc.top" title="xiaomao" target="_blank">xiaomao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一-动静分离"><span class="nav-number">1.</span> <span class="nav-text">一.动静分离</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二-配置动静分离"><span class="nav-number">2.</span> <span class="nav-text">二.配置动静分离</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1"><span class="nav-number">2.1.</span> <span class="nav-text">2.1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-准备测试文件"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 准备测试文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A："><span class="nav-number">2.2.1.</span> <span class="nav-text">A：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B：为nginx静态请求准备图片"><span class="nav-number">2.2.2.</span> <span class="nav-text">B：为nginx静态请求准备图片</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-准备tomcat的动态页面"><span class="nav-number">2.2.3.</span> <span class="nav-text">C:准备tomcat的动态页面</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-新建nginx下虚拟server"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 新建nginx下虚拟server</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三-测试页面"><span class="nav-number">3.</span> <span class="nav-text">三.测试页面</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-需要配置谷歌浏览器，使浏览器支持跨域"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 需要配置谷歌浏览器，使浏览器支持跨域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2访问页面："><span class="nav-number">3.2.</span> <span class="nav-text">3.2访问页面：</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wangzewei</span>
+
+  
+</div>
+
+
+
+
+
+
+  <!-- <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+-->
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
